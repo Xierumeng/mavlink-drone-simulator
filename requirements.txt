@@ -1,5 +1,6 @@
 # Packages listed in alphabetical order
 pytest
+pyyaml
 
 # Linters and formatters are explicitly versioned
 black==24.2.0
