@@ -1,0 +1,17 @@
+download:
+    windows:
+        base_url: "https://firmware.ardupilot.org/Tools/MissionPlanner/sitl/CopterStable/"
+        file_list:
+            - [ArduCopter.elf, ArduCopter.exe]
+            - [cygatomic-1.dll, cygatomic-1.dll]
+            - [cyggcc_s-1.dll, cyggcc_s-1.dll]
+            - [cyggcc_s-seh-1.dll, cyggcc_s-seh-1.dll]
+            - [cyggomp-1.dll, cyggomp-1.dll]
+            - [cygquadmath-0.dll, cygquadmath-0.dll]
+            - [cygssp-0.dll, cygssp-0.dll]
+            - [cygstdc++-6.dll, cygstdc++-6.dll]
+            - [cygwin1.dll, cygwin1.dll]
+    unix:
+        base_url: "https://firmware.ardupilot.org/Copter/stable/SITL_x86_64_linux_gnu/"
+        file_list:
+            - ["arducopter, arducopter"]
