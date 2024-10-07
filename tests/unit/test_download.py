@@ -7,6 +7,7 @@ import pathlib
 import pytest
 
 from modules.download import download
+from modules.download import download_name_map
 
 
 # Test functions use test fixture signature names and access class privates
@@ -15,11 +16,11 @@ from modules.download import download
 
 
 @pytest.fixture
-def names() -> list[download.DownloadNameMap]:  # type: ignore
+def names() -> list[download_name_map.DownloadNameMap]:  # type: ignore
     """
     Single name.
     """
-    result, name = download.DownloadNameMap.create(
+    result, name = download_name_map.DownloadNameMap.create(
         "ArduCopter.elf",
         "ArduCopter.exe",
     )
@@ -29,7 +30,9 @@ def names() -> list[download.DownloadNameMap]:  # type: ignore
     yield [name]  # type: ignore
 
 
-def test_single_file(names: list[download.DownloadNameMap], tmp_path: pathlib.Path) -> None:
+def test_single_file(
+    names: list[download_name_map.DownloadNameMap], tmp_path: pathlib.Path
+) -> None:
     """
     Basic test to download and save a single file.
 
