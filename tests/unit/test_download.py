@@ -7,7 +7,7 @@ import pathlib
 import pytest
 
 from modules.download import download
-from modules.download import download_name_map
+from modules.download import download_data
 
 
 # Test functions use test fixture signature names and access class privates
@@ -26,18 +26,27 @@ def test_directory_create(tmp_path: pathlib.Path) -> pathlib.Path:  # type: igno
 
 
 @pytest.fixture
-def names() -> list[download_name_map.DownloadNameMap]:  # type: ignore
+def base_url_and_single_name() -> download_data.BaseUrlAndFilenames:  # type: ignore
     """
     Single name.
     """
-    result, name = download_name_map.DownloadNameMap.create(
+    result, name = download_data.DownloadNameMap.create(
         "copter.parm",
         "test.parm",
     )
     assert result
     assert name is not None
 
-    yield [name]
+    base_url = "https://raw.githubusercontent.com/ArduPilot/ardupilot/refs/heads/master/Tools/autotest/default_params/"
+    result, base_url_and_filenames = download_data.BaseUrlAndFilenames.create(
+        base_url,
+        [name],
+    )
+
+    assert result
+    assert base_url_and_filenames is not None
+
+    yield base_url_and_filenames
 
 
 class TestDeleteDirectory:
@@ -102,7 +111,7 @@ class TestDownloadAndSave:
     """
 
     def test_single_file(
-        self, names: list[download_name_map.DownloadNameMap], tmp_path: pathlib.Path
+        self, base_url_and_single_name: download_data.BaseUrlAndFilenames, tmp_path: pathlib.Path
     ) -> None:
         """
         Basic test to download and save a single file.
@@ -110,15 +119,15 @@ class TestDownloadAndSave:
         This test is fragile as it depends on a remote server!
         """
         # Setup
-        base_url = "https://raw.githubusercontent.com/ArduPilot/ardupilot/refs/heads/master/Tools/autotest/default_params/"
-
         # Build a temporary directory using tmp_path so
         # the files are cleaned after the tests are run
         tmp_path.mkdir(parents=True, exist_ok=True)
 
         # Run
-        result = download.download_and_save(base_url, names, tmp_path)
+        result = download.download_and_save(base_url_and_single_name, tmp_path)
 
         # Check
         assert result
-        assert pathlib.Path(tmp_path, names[0].local_name).stat().st_size == 1957
+
+        local_filepath = pathlib.Path(tmp_path, base_url_and_single_name.names[0].local_name)
+        assert local_filepath.stat().st_size == 1957

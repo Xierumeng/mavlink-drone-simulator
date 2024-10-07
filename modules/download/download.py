@@ -6,7 +6,7 @@ import pathlib
 import shutil
 import urllib.request
 
-from . import download_name_map
+from . import download_data
 
 
 def delete_directory(directory_path: pathlib.Path) -> bool:
@@ -37,29 +37,43 @@ def delete_directory(directory_path: pathlib.Path) -> bool:
 
 
 def download_and_save(
-    base_url: str, names: download_name_map.DownloadNameMap, base_save_path: pathlib.Path
+    base_url_and_filenames: download_data.BaseUrlAndFilenames, base_save_path: pathlib.Path
 ) -> bool:
     """
-    Download and save file to the path from the URL.
+    Download and save files to the path from the URL.
 
-    base_url: Must have / at end.
-    names: Filenames.
+    base_url_and_filenames: Base URL and list of filenames.
     base_save_path: Local save location.
 
     Return: Success.
     """
-    # TODO: Exception catching
+    if not base_save_path.exists():
+        print(f"ERROR: Path doesn't exist: {base_save_path}")
+        return False
 
-    for name in names:
+    if not base_save_path.is_dir():
+        print(f"ERROR: Not a directory: {base_save_path}")
+        return False
+
+    for name in base_url_and_filenames.names:
         # Download
+        full_url = base_url_and_filenames.base_url + name.remote_name
 
-        full_url = base_url + name.remote_name
-
-        with urllib.request.urlopen(full_url) as remote_file:
-            content = remote_file.read()
+        try:
+            with urllib.request.urlopen(full_url) as remote_file:
+                content = remote_file.read()
+        # Catching all exceptions for library call
+        # pylint: disable-next=broad-exception-caught
+        except Exception as exception:
+            print(f"ERROR: Could not download {full_url} with exception: {exception}")
 
         # Save
-        with open(pathlib.Path(base_save_path, name.local_name), "wb") as local_file:
-            local_file.write(content)
+        try:
+            with open(pathlib.Path(base_save_path, name.local_name), "wb") as local_file:
+                local_file.write(content)
+        # Catching all exceptions for library call
+        # pylint: disable-next=broad-exception-caught
+        except Exception as exception:
+            print(f"ERROR: Could not save {name.local_name} with exception: {exception}")
 
     return True
