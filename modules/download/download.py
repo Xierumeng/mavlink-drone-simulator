@@ -3,47 +3,50 @@ Download and save files from the World Wide Web.
 """
 
 import pathlib
+import shutil
 import urllib.request
 
+from . import download_name_map
 
-class DownloadNameMap:
+
+def delete_directory(directory_path: pathlib.Path) -> bool:
     """
-    For renaming downloaded files.
+    Delete the provided directory.
+
+    directory_path: The directory.
+
+    Return: Success.
     """
+    if not directory_path.exists():
+        print("ERROR: Path doesn't exist")
+        return False
 
-    __create_key = object()
+    if not directory_path.is_dir():
+        print("ERROR: Not a directory")
+        return False
 
-    @classmethod
-    def create(cls, remote_name: str, local_name: str) -> "tuple[bool, DownloadNameMap | None]":
-        """
-        remote_name: Filename on the server.
-        local_name: Filename on the client.
-        """
-        if remote_name == "":
-            return False, None
+    try:
+        shutil.rmtree(directory_path)
+        return True
+    # Catching all exceptions for library call
+    # pylint: disable-next=broad-exception-caught
+    except Exception as exception:
+        print(f"ERROR: Could not delete directory: {exception}")
 
-        if local_name == "":
-            return False, None
-
-        return True, DownloadNameMap(cls.__create_key, remote_name, local_name)
-
-    def __init__(self, class_private_create_key: object, remote_name: str, local_name: str) -> None:
-        """
-        Private constructor, use create() method.
-        """
-        assert class_private_create_key is DownloadNameMap.__create_key, "Use create() method"
-
-        self.remote_name = remote_name
-        self.local_name = local_name
+    return False
 
 
-def download_and_save(base_url: str, names: DownloadNameMap, base_save_path: pathlib.Path) -> bool:
+def download_and_save(
+    base_url: str, names: download_name_map.DownloadNameMap, base_save_path: pathlib.Path
+) -> bool:
     """
     Download and save file to the path from the URL.
 
     base_url: Must have / at end.
     names: Filenames.
     base_save_path: Local save location.
+
+    Return: Success.
     """
     # TODO: Exception catching
 
