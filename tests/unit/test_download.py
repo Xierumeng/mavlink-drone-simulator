@@ -31,13 +31,13 @@ def names() -> list[download_name_map.DownloadNameMap]:  # type: ignore
     Single name.
     """
     result, name = download_name_map.DownloadNameMap.create(
-        "ArduCopter.elf",
-        "ArduCopter.exe",
+        "copter.parm",
+        "test.parm",
     )
     assert result
     assert name is not None
 
-    yield [name]  # type: ignore
+    yield [name]
 
 
 class TestDeleteDirectory:
@@ -110,7 +110,7 @@ class TestDownloadAndSave:
         This test is fragile as it depends on a remote server!
         """
         # Setup
-        base_url = "https://firmware.ardupilot.org/Tools/MissionPlanner/sitl/CopterStable/"
+        base_url = "https://raw.githubusercontent.com/ArduPilot/ardupilot/refs/heads/master/Tools/autotest/default_params/"
 
         # Build a temporary directory using tmp_path so
         # the files are cleaned after the tests are run
@@ -121,4 +121,4 @@ class TestDownloadAndSave:
 
         # Check
         assert result
-        assert pathlib.Path(tmp_path, names[0].local_name).stat().st_size == 9511971
+        assert pathlib.Path(tmp_path, names[0].local_name).stat().st_size == 1957
