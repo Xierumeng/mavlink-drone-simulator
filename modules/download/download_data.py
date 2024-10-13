@@ -41,13 +41,40 @@ class BaseUrlAndFilenames:
 
     __create_key = object()
 
+    @staticmethod
+    def create_from_config(
+        base_url: str, name_pairs: list[tuple[str, str]]
+    ) -> "tuple[bool, BaseUrlAndFilenames | None]":
+        """
+        base_url: URL to download from. Suffix doesn't matter.
+        name_pairs: List of files to download in the form [remote_name, local_name] .
+        """
+        names = []
+        for name_pair in name_pairs:
+            if len(name_pair) != 2:
+                print(f"ERROR: Expected pair: {name_pair}")
+                return False, None
+
+            remote_name, local_name = name_pair
+            result, download_name_map = DownloadNameMap.create(remote_name, local_name)
+            if not result:
+                print(f"ERROR: Failed to create DownloadNameMap with: {name_pair}")
+                return False, None
+
+            # Get Pylance to stop complaining
+            assert download_name_map is not None
+
+            names.append(download_name_map)
+
+        return BaseUrlAndFilenames.create(base_url, names)
+
     @classmethod
     def create(
         cls, base_url: str, names: list[DownloadNameMap]
     ) -> "tuple[bool, BaseUrlAndFilenames | None]":
         """
         base_url: URL to download from. Adds suffix / if not there already.
-        files: List of files to download.
+        names: List of files to download.
         """
         if base_url == "":
             return False, None
