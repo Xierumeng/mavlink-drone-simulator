@@ -8,3 +8,6 @@ venv/
 
 # Logging
 logs/
+
+# Simulator download
+simulator/
