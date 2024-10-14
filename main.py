@@ -3,7 +3,9 @@ Program entry.
 """
 
 import argparse
+import os
 import pathlib
+import subprocess
 
 from modules.download import download
 from modules.download import download_data
@@ -12,6 +14,8 @@ from modules.read_yaml import read_yaml
 
 
 CONFIG_FILE_PATH = pathlib.Path("config.yaml")
+
+SIMULATOR_OPTIONS = ["-M", "+", "--home=43.472978,-80.540103,336,0", "--defaults", "copter.parm"]
 
 
 def download_simulator(
@@ -70,6 +74,34 @@ def download_simulator(
         return False
 
     print("Simulator downloaded!")
+
+    return True
+
+
+def run_executables(simulator_directory: pathlib.Path, simulator_executable_name: str) -> bool:
+    """
+    Run simulator and MAVProxy.
+    """
+    os.chdir(simulator_directory)
+
+    processes: list[subprocess.Popen[bytes]] = []
+
+    # Non blocking operation
+    # pylint: disable-next=consider-using-with
+    simulator_process = subprocess.Popen(
+        [simulator_executable_name] + SIMULATOR_OPTIONS, stdout=subprocess.PIPE
+    )
+    processes.append(simulator_process)
+
+    while True:
+        for process in processes:
+            output = process.stdout.readline()
+            if output:
+                print(output.decode(encoding="utf-8").strip("\r\n"))
+
+            if process.poll() is not None:
+                print(f"Simulator process ended with return code: {process.poll()}")
+                break
 
     return True
 
@@ -145,6 +177,13 @@ def main() -> int:
         if not result:
             # Error already logged in `download_simulator` .
             return -1
+
+    simulator_executable_name = config_download_simulator_executable[0][1]
+
+    result = run_executables(pathlib.Path(simulator_directory), simulator_executable_name)
+    if not result:
+        # Error already logged in `run_executables()` .
+        return -1
 
     return 0
 
