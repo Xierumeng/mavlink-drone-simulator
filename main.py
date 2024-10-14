@@ -3,7 +3,9 @@ Program entry.
 """
 
 import argparse
+import os
 import pathlib
+import subprocess
 
 from modules.download import download
 from modules.download import download_data
@@ -13,13 +15,16 @@ from modules.read_yaml import read_yaml
 
 CONFIG_FILE_PATH = pathlib.Path("config.yaml")
 
+SIMULATOR_OPTIONS = ["-M", "+", "--home=43.472978,-80.540103,336,0", "--defaults", "copter.parm"]
+
 
 def download_simulator(
     local_directory: pathlib.Path,
     config_download_parameters_base_url: str,
-    config_download_parameters_filenames: str,
+    config_download_parameters_filenames: list[list[str]],
     config_download_simulator_base_url: str,
-    config_download_simulator_filenames: str,
+    config_download_simulator_executable: list[list[str]],
+    config_download_simulator_filenames: list[list[str]],
 ) -> bool:
     """
     Download parameters and simulator.
@@ -35,14 +40,26 @@ def download_simulator(
     assert download_parameters_properties is not None
 
     result, download_simulator_properties = download_data.BaseUrlAndFilenames.create_from_config(
-        config_download_simulator_base_url, config_download_simulator_filenames
+        config_download_simulator_base_url, config_download_simulator_executable
     )
     if not result:
-        print("ERROR: Could not create download properties for simulator")
+        print("ERROR: Could not create download properties for simulator executable")
         return False
 
     # Get Pylance to stop complaining
     assert download_simulator_properties is not None
+
+    if len(config_download_simulator_filenames) > 0:
+        result, download_simulator_support_properties = (
+            download_data.BaseUrlAndFilenames.create_from_config(
+                config_download_simulator_base_url, config_download_simulator_filenames
+            )
+        )
+        if not result:
+            print("ERROR: Could not create download properties for simulator support files")
+            return False
+
+        download_simulator_properties.names += download_simulator_support_properties.names
 
     print("Downloading parameters")
     result = download.download_and_save(download_parameters_properties, local_directory)
@@ -61,17 +78,40 @@ def download_simulator(
     return True
 
 
+def run_executables(simulator_directory: pathlib.Path, simulator_executable_name: str) -> bool:
+    """
+    Run simulator and MAVProxy.
+    """
+    os.chdir(simulator_directory)
+
+    processes: list[subprocess.Popen[bytes]] = []
+
+    # Non blocking operation
+    # pylint: disable-next=consider-using-with
+    simulator_process = subprocess.Popen(
+        [simulator_executable_name] + SIMULATOR_OPTIONS, stdout=subprocess.PIPE
+    )
+    processes.append(simulator_process)
+
+    while True:
+        for process in processes:
+            output = process.stdout.readline()
+            if output:
+                print(output.decode(encoding="utf-8").strip("\r\n"))
+
+            if process.poll() is not None:
+                print(f"Simulator process ended with return code: {process.poll()}")
+                break
+
+    return True
+
+
 def main() -> int:
     """
     Main function.
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument(
-        "--skip-download",
-        action="store_true",
-        help="option to skip simulator download",
-    )
     parser.add_argument(
         "--overwrite",
         action="store_true",
@@ -113,6 +153,7 @@ def main() -> int:
         )
 
         config_download_simulator_base_url = config_download[config_download_os_key]["base_url"]
+        config_download_simulator_executable = config_download[config_download_os_key]["executable"]
         config_download_simulator_filenames = config_download[config_download_os_key]["file_list"]
     # Catching all exceptions for library call
     # pylint: disable-next=broad-exception-caught
@@ -120,27 +161,29 @@ def main() -> int:
         print(f"ERROR: Could not open configs: {exception}")
         return -1
 
-    local_directory = pathlib.Path(config_download_local_directory)
-    if not args.overwrite:
-        if local_directory.exists():
-            print(
-                f"ERROR: Directory already exists: {local_directory} . Delete the entire directory or use option `--overwrite`"
-            )
-            return -1
-
-    local_directory.mkdir(parents=True, exist_ok=True)
-
-    if not args.skip_download:
+    simulator_directory = pathlib.Path(config_download_local_directory)
+    if not args.overwrite and simulator_directory.exists():
+        print(f"Found directory, skipping download: {simulator_directory}")
+    else:
+        simulator_directory.mkdir(parents=True, exist_ok=True)
         result = download_simulator(
-            local_directory,
+            simulator_directory,
             config_download_parameters_base_url,
             config_download_parameters_filenames,
             config_download_simulator_base_url,
+            config_download_simulator_executable,
             config_download_simulator_filenames,
         )
         if not result:
             # Error already logged in `download_simulator` .
             return -1
+
+    simulator_executable_name = config_download_simulator_executable[0][1]
+
+    result = run_executables(pathlib.Path(simulator_directory), simulator_executable_name)
+    if not result:
+        # Error already logged in `run_executables()` .
+        return -1
 
     return 0
 
