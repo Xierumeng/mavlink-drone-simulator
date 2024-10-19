@@ -1,0 +1,6 @@
+# MAVProxy
+opencv-python
+matplotlib
+mavproxy
+prompt_toolkit
+wxPython

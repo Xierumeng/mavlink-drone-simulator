@@ -1,5 +1,5 @@
 """
-Program entry.
+Downloads and starts the simulator.
 """
 
 import argparse
@@ -78,30 +78,30 @@ def download_simulator(
     return True
 
 
-def run_executables(simulator_directory: pathlib.Path, simulator_executable_name: str) -> bool:
+def run_executables(
+    simulator_directory: pathlib.Path,
+    simulator_executable_name: str,
+) -> bool:
     """
-    Run simulator and MAVProxy.
+    Run simulator.
     """
     os.chdir(simulator_directory)
-
-    processes: list[subprocess.Popen[bytes]] = []
 
     # Non blocking operation
     # pylint: disable-next=consider-using-with
     simulator_process = subprocess.Popen(
         [simulator_executable_name] + SIMULATOR_OPTIONS, stdout=subprocess.PIPE
     )
-    processes.append(simulator_process)
 
     while True:
-        for process in processes:
-            output = process.stdout.readline()
-            if output:
-                print(output.decode(encoding="utf-8").strip("\r\n"))
+        output = simulator_process.stdout.readline()
+        if output:
+            print(output.decode(encoding="utf-8").strip("\r\n"))
 
-            if process.poll() is not None:
-                print(f"Simulator process ended with return code: {process.poll()}")
-                break
+        simulator_process_return_code = simulator_process.poll()
+        if simulator_process_return_code is not None:
+            print(f"Simulator ended with return code: {simulator_process_return_code}")
+            break
 
     return True
 
@@ -127,7 +127,7 @@ def main() -> int:
 
     result, config = read_yaml.open_config(CONFIG_FILE_PATH)
     if not result:
-        print("ERROR: Could not open config")
+        print(f"ERROR: Could not open config: {CONFIG_FILE_PATH}")
         return -1
 
     # Get Pylance to stop complaining
@@ -175,14 +175,14 @@ def main() -> int:
             config_download_simulator_filenames,
         )
         if not result:
-            # Error already logged in `download_simulator` .
+            print("ERROR: Could not download simulator")
             return -1
 
     simulator_executable_name = config_download_simulator_executable[0][1]
 
     result = run_executables(pathlib.Path(simulator_directory), simulator_executable_name)
     if not result:
-        # Error already logged in `run_executables()` .
+        print("ERROR: Could not run programs")
         return -1
 
     return 0
