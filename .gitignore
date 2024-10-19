@@ -11,3 +11,6 @@ logs/
 
 # Simulator download
 simulator/
+
+# MAVProxy
+mav.*
