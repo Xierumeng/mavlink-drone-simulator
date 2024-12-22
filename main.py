@@ -14,8 +14,18 @@ from modules.read_yaml import read_yaml
 
 
 CONFIG_FILE_PATH = pathlib.Path("config.yaml")
+SIMULATOR_ARGUMENTS_PATH = pathlib.Path("config_simulator_arguments.txt")
 
-SIMULATOR_OPTIONS = ["-M", "+", "--home=43.472978,-80.540103,336,0", "--defaults", "copter.parm"]
+
+def get_simulator_arguments(filepath: pathlib.Path) -> list[str]:
+    """
+    Command line arguments for the simulator.
+    """
+    content = ""
+    with open(filepath, "r", encoding="utf-8") as simulator_arguments_file:
+        content = simulator_arguments_file.read()
+
+    return content.split()
 
 
 def download_simulator(
@@ -81,6 +91,7 @@ def download_simulator(
 def run_executables(
     simulator_directory: pathlib.Path,
     simulator_executable_name: str,
+    simulator_arguments: list[str],
 ) -> bool:
     """
     Run simulator.
@@ -90,7 +101,7 @@ def run_executables(
     # Non blocking operation
     # pylint: disable-next=consider-using-with
     simulator_process = subprocess.Popen(
-        [simulator_executable_name] + SIMULATOR_OPTIONS, stdout=subprocess.PIPE
+        [simulator_executable_name] + simulator_arguments, stdout=subprocess.PIPE
     )
 
     while True:
@@ -115,7 +126,13 @@ def main() -> int:
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="option to overwrite existing simulator",
+        help="Option to overwrite existing simulator",
+    )
+    parser.add_argument(
+        "--simulator_arguments_path",
+        action="store",
+        default=SIMULATOR_ARGUMENTS_PATH,
+        help="Path to file containing simulator command line arguments",
     )
 
     args = parser.parse_args()
@@ -179,8 +196,11 @@ def main() -> int:
             return -1
 
     simulator_executable_name = config_download_simulator_executable[0][1]
+    simulator_arguments = get_simulator_arguments(args.simulator_arguments_path)
 
-    result = run_executables(pathlib.Path(simulator_directory), simulator_executable_name)
+    result = run_executables(
+        pathlib.Path(simulator_directory), simulator_executable_name, simulator_arguments
+    )
     if not result:
         print("ERROR: Could not run programs")
         return -1
