@@ -15,8 +15,6 @@ from modules.read_yaml import read_yaml
 
 CONFIG_FILE_PATH = pathlib.Path("config.yaml")
 
-SIMULATOR_OPTIONS = ["-M", "+", "--home=43.472978,-80.540103,336,0", "--defaults", "copter.parm"]
-
 
 def download_simulator(
     local_directory: pathlib.Path,
@@ -81,6 +79,7 @@ def download_simulator(
 def run_executables(
     simulator_directory: pathlib.Path,
     simulator_executable_name: str,
+    simulator_options: list[str],
 ) -> bool:
     """
     Run simulator.
@@ -90,7 +89,7 @@ def run_executables(
     # Non blocking operation
     # pylint: disable-next=consider-using-with
     simulator_process = subprocess.Popen(
-        [simulator_executable_name] + SIMULATOR_OPTIONS, stdout=subprocess.PIPE
+        [simulator_executable_name] + simulator_options, stdout=subprocess.PIPE
     )
 
     while True:
@@ -115,10 +114,39 @@ def main() -> int:
     parser.add_argument(
         "--overwrite",
         action="store_true",
-        help="option to overwrite existing simulator",
+        help="Option to overwrite existing simulator",
+    )
+
+    # Simulator options
+    parser.add_argument(
+        "-M",
+        action="store",
+        default="+",
+        help="Simulator option",
+    )
+    parser.add_argument(
+        "--home",
+        action="store",
+        default="43.472978,-80.540103,336,0",
+        help="Simulator option",
+    )
+    parser.add_argument(
+        "--defaults",
+        action="store",
+        default="copter.parm",
+        help="Simulator option",
     )
 
     args = parser.parse_args()
+
+    simulator_options = [
+        "-M",
+        args.M,
+        f"--home={args.home}",
+        "--defaults",
+        args.defaults,
+    ]
+    print(simulator_options)
 
     result, os_type = platform.get_os()
     if not result:
@@ -180,7 +208,9 @@ def main() -> int:
 
     simulator_executable_name = config_download_simulator_executable[0][1]
 
-    result = run_executables(pathlib.Path(simulator_directory), simulator_executable_name)
+    result = run_executables(
+        pathlib.Path(simulator_directory), simulator_executable_name, simulator_options
+    )
     if not result:
         print("ERROR: Could not run programs")
         return -1
