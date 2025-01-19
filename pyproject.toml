@@ -11,10 +11,17 @@ ignore-paths = [
 
     # Python
     "__pycache__/",
-    "venv/",
+    "venv*/",
 
     # Logging
     "logs/",
+
+    # Simulator download
+    "simulator/",
+
+    # Release build
+    "build*/",
+    "dist*/",
 ]
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
