@@ -51,6 +51,7 @@ If you don't have an existing GUI program nor MAVProxy installed, you can instal
 
 Run MAVProxy:
 1. Run the program
+    1. `python -m main`
 1. Run MAVProxy:
     1. `mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550`
 1. Repeat the above steps until you are done
