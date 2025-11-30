@@ -14,3 +14,7 @@ simulator/
 
 # MAVProxy
 mav.*
+
+# Release build
+build*/
+dist*/

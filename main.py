@@ -31,10 +31,10 @@ def get_simulator_arguments(filepath: pathlib.Path) -> list[str]:
 def download_simulator(
     local_directory: pathlib.Path,
     config_download_parameters_base_url: str,
-    config_download_parameters_filenames: list[list[str]],
+    config_download_parameters_filenames: list[tuple[str, str]],
     config_download_simulator_base_url: str,
-    config_download_simulator_executable: list[list[str]],
-    config_download_simulator_filenames: list[list[str]],
+    config_download_simulator_executable: list[tuple[str, str]],
+    config_download_simulator_filenames: list[tuple[str, str]],
 ) -> bool:
     """
     Download parameters and simulator.
@@ -69,6 +69,9 @@ def download_simulator(
             print("ERROR: Could not create download properties for simulator support files")
             return False
 
+        # Get Pylance to stop complaining
+        assert download_simulator_support_properties is not None
+
         download_simulator_properties.names += download_simulator_support_properties.names
 
     print("Downloading parameters")
@@ -101,11 +104,14 @@ def run_executables(
     # Non blocking operation
     # pylint: disable-next=consider-using-with
     simulator_process = subprocess.Popen(
-        ["./" + simulator_executable_name] + simulator_arguments, stdout=subprocess.PIPE
+        ["./" + simulator_executable_name] + simulator_arguments,
+        stdout=subprocess.PIPE,
     )
 
+    os.chdir("..")
+
     while True:
-        output = simulator_process.stdout.readline()
+        output = simulator_process.stdout.readline()  # type: ignore
         if output:
             print(output.decode(encoding="utf-8").strip("\r\n"))
 
