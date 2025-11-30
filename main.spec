@@ -8,7 +8,6 @@ a = Analysis(
     datas=[
         ("config_simulator_arguments.txt", "."),
         ("config.yaml", "."),
-        ("INSTRUCTIONS.md", "."),
         ("LICENCE", "."),
         ("README.md", "."),
     ],
@@ -27,7 +26,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main',
+    name='mavlink_drone_simulator',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -49,5 +48,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='main',
+    name='mavlink_drone_simulator',
 )

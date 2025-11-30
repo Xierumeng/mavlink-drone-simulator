@@ -50,7 +50,7 @@ If you don't have an existing GUI program nor MAVProxy installed, you can instal
         1. `wxPython` does not have precompiled binaries for Linux. More information: https://wxpython.org/pages/downloads/
 
 Run MAVProxy:
-1. Run the program
+1. Run the program:
     1. `python -m main`
 1. Run MAVProxy:
     1. `mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550`
@@ -64,3 +64,15 @@ Common errors:
 | Error                        | Solution                                      |
 |------------------------------|-----------------------------------------------|
 | Connection could not be made | Start the simulator (ideally before MAVProxy) |
+
+## Release
+
+PyInstaller is used to create an independent release: https://pyinstaller.org/
+
+1. Activate the virtual environment if it isn't already activated
+1. Create the release:
+    1. `pyinstaller main.spec`
+1. Package the `dist` directory so that there is a top level directory containing all files
+    * For example: `mavlink_drone_simulator_windows_x86-64_1.0.zip/main/[everything else]`
+1. Deactivate the virtual environment
+1. Repeat the above steps for each target
