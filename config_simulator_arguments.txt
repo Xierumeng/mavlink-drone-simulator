@@ -1,1 +1,1 @@
--M + --home=43.472978,-80.540103,336,0 --defaults copter.parm
+-M + --home=43.47253,-80.54066,336,0 --defaults copter.parm

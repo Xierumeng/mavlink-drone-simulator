@@ -2,7 +2,7 @@
 
 ## Setup
 
-Tested with Python 3.11 .
+Tested with Python 3.12 .
 
 1. Clone the repository and `cd` into the directory
 1. Create a virtual environment:
@@ -35,7 +35,7 @@ Common errors:
 
 ### MAVProxy
 
-Tested on Windows 10 and Ubuntu 22.04 .
+Tested on Windows 10 and Ubuntu 24.04 .
 
 If you don't have an existing GUI program nor MAVProxy installed, you can install MAVProxy through `pip` .
 
@@ -46,16 +46,13 @@ If you don't have an existing GUI program nor MAVProxy installed, you can instal
     * Linux without MAVProxy GUI:
         1. `pip install mavproxy`
     * Linux with MAVProxy GUI:
-        1. `sudo apt install libgtk-3-dev`
-        1. `sudo apt install python3-dev`
-        1. `pip install -r requirements_mavproxy.txt`
-
-`wxPython` does not have precompiled binaries for Linux. More information: https://wxpython.org/pages/downloads/
+        1. TODO: Cannot get Linux GUI to work
+        1. `wxPython` does not have precompiled binaries for Linux. More information: https://wxpython.org/pages/downloads/
 
 Run MAVProxy:
-1. Run the program.
+1. Run the program
 1. Run MAVProxy:
-    1. `mavproxy --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550`
+    1. `mavproxy.py --master tcp:127.0.0.1:5760 --sitl 127.0.0.1:5501 --out 127.0.0.1:14550`
 1. Repeat the above steps until you are done
 1. Deactivate the virtual environment
 

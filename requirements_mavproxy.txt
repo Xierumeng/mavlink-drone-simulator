@@ -1,6 +1,9 @@
 # MAVProxy
+future  # For Linux
 opencv-python
 matplotlib
 mavproxy
 prompt_toolkit
-wxPython
+# TODO: Cannot get Linux GUI to work
+# -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-24.04
+# wxPython

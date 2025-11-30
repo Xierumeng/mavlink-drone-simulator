@@ -101,7 +101,7 @@ def run_executables(
     # Non blocking operation
     # pylint: disable-next=consider-using-with
     simulator_process = subprocess.Popen(
-        [simulator_executable_name] + simulator_arguments, stdout=subprocess.PIPE
+        ["./" + simulator_executable_name] + simulator_arguments, stdout=subprocess.PIPE
     )
 
     while True:
