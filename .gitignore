@@ -18,4 +18,3 @@ mav.*
 # Release build
 build*/
 dist*/
-*.spec
